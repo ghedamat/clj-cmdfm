@@ -8,6 +8,10 @@
 (defn truef [& o] true)
 (defn falsef [& o] false)
 
+(def app
+  {:playing (atom false)
+   :channel (chan)})
+
 (defn play-track
   [files app]
   (let [c (:channel app)
@@ -17,20 +21,19 @@
         (println "playing" (:title file))
         (mplayer/play (:stream_url file))
         (println "finished playing" (:title file))
-        (>! c [:play-done (rest files)]))
+        (>! c [:done (rest files)]))
       (do (swap! (:playing app) falsef)
           (println "playlist is over")))))
 
 (defn play-genre
-  [genre app]
-  (let [c (:channel app)
-        playing (:playing app)
-        files (->> (api/fetch-genre genre 10)
-                   (map #(select-keys % [:title :stream_url :duration])))]
-    (if @playing
-      (println "already playing")
-      (do (swap! (:playing app) truef)
-          (play-track files app)))))
+  "fetches a playlist for a given genre and starts playing"
+  ([[genre limit] app]
+   (let [playing (:playing app)
+         limit (if limit limit 10)]
+     (if @playing
+       (println "already playing")
+       (do (swap! playing truef)
+           (play-track (api/fetch-genre genre limit) app))))))
 
 (defn play-next
   [app]
@@ -38,7 +41,7 @@
     (mplayer/stop)
     (println "nothing to play")))
 
-(defn play-done
+(defn done
   [params app]
   (if @(:playing app)
     (play-track params app)))
@@ -52,14 +55,13 @@
   []
   (mplayer/pause))
 
-
 (defn exit [status msg]
   (println msg)
   (System/exit status))
 
-(defn help []
+(defn prn-help []
   (println "Available commands:
-           play <genere>
+           play <genre>
            next
            pause
            stop
@@ -69,20 +71,15 @@
   [command params app]
   (case command
     :play (play-genre params app)
-    :play-done (play-done params app)
+    :done (done params app)
     :next (play-next app)
     :pause (pause)
     :stop (stop app)
     :quit (exit 0 "Bai Bai")
-    :test (println "test")
-    :save (println "save")
-    (help)))
-
-(def app
-  {:playing (atom false)
-   :channel (chan)})
+    (prn-help)))
 
 (defn main-loop
+  "Go routine that loops waiting for commands on the app channel."
   []
   (let [channel (:channel app)]
     (go-loop []
@@ -91,15 +88,15 @@
                (recur)))))
 
 (defn command-loop
+  "Reads from stdin for the next command and dispatches it."
   ([]
-  (println "Welcome to clj-cmdfm")
-  (help)
-  (main-loop)
-  (loop []
-    (let [[command & params] (-> (read-line) (string/split #"\s+"))]
-      (dispatch (keyword command) params app)
-      (recur))))
+   (println "Welcome to clj-cmdfm")
+   (prn-help)
+   (main-loop)
+   (loop []
+     (let [[command & params] (-> (read-line) (string/split #"\s+"))]
+       (dispatch (keyword command) params app)
+       (recur))))
   ([genre]
    (dispatch :play genre app)
    (command-loop)))
-

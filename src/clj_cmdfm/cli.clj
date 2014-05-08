@@ -15,7 +15,7 @@
 (defn usage [options-summary]
   (->> ["clj-cmdfm"
         ""
-        "Usage: clj-cmdfm genre"
+        "Usage: clj-cmdfm <genre>"
         ""
         "Options:"
         options-summary]
