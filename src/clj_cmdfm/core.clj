@@ -91,7 +91,7 @@
                (recur)))))
 
 (defn command-loop
-  [_]
+  ([]
   (println "Welcome to clj-cmdfm")
   (help)
   (main-loop)
@@ -99,4 +99,7 @@
     (let [[command & params] (-> (read-line) (string/split #"\s+"))]
       (dispatch (keyword command) params app)
       (recur))))
+  ([genre]
+   (dispatch :play genre app)
+   (command-loop)))
 
