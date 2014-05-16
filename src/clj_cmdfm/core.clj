@@ -5,12 +5,19 @@
             [clojure.string :as string])
   (:gen-class))
 
-(defn truef [& o] true)
-(defn falsef [& o] false)
+(defn- select-values [m ks] (map m ks))
+
+;; this has to be done differently :/
+(defn- truef [& o] true)
+(defn- falsef [& o] false)
 
 (defn prn-help [options]
   (println (str "Available commands:\n\n"
-                (string/join "\n" (map #(:desc %) options)))))
+                (->> options
+                     (map #(select-values % [:desc :short-opt :long-opt]))
+                     (map (fn[[d, s, l]] (str s " | " l " : " d)))
+                     (string/join "\n")))))
+
 (def app
   {:playing (atom false)
    :channel (chan)})
