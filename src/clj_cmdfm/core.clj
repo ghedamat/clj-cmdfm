@@ -75,7 +75,7 @@
         (println "finished playing" (:title file))
         (>! c [:done (rest files)]))
       (do (swap! (:playing app) falsef)
-          (println "playlist is over")))))
+          (prompt "Playlist is over")))))
 
 (defn play-genre
   "fetches a playlist for a given genre and starts playing"
@@ -187,5 +187,5 @@
        (dispatch-console command params app)
        (recur))))
   ([genre]
-   (dispatch :play genre app)
+   (dispatch :play [genre] app)
    (command-loop)))

@@ -33,6 +33,6 @@
       (> (count arguments) 1) (exit 1 (usage summary))
       errors (exit 1 (error-msg errors)))
     ;; Execute program with options
-    (command-loop arguments)))
+    (apply command-loop arguments)))
 
 
