@@ -14,3 +14,13 @@
        client/get
        :body
        (json/read-str :key-fn keyword)))))
+
+(defn fetch-genres
+  "hits cmd.fm api and gets the list of genres"
+  []
+  (let [url (str "https://cmd.fm/api/genres")]
+    (->
+      url
+      client/get
+      :body
+      (json/read-str :key-fn keyword))))
