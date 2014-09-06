@@ -4,9 +4,10 @@
 
 (defn play
   [file]
-  (let [file (str file "?client_id=2cd0c4a7a6e5992167a4b09460d85ece")]
+  (let [file (str file "?client_id=26fb3c513c8e0e2c18a75e6174f4ca70")]
     (sh "mkfifo" "/tmp/mplayer-control")
-    (sh "mplayer" "-slave" "-quiet" "-input" "file=/tmp/mplayer-control" file)))
+    (sh "mkfifo" "/tmp/mplayer-data")
+    (sh "./play.sh" file)))
 
 (defn pause
   []
